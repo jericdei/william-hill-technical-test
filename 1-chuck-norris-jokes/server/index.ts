@@ -93,12 +93,6 @@ app.get("/jokes/search", async (req: Request, res: Response) => {
             },
         })
 
-        if (params.page) {
-            const data = response.data
-
-            console.log(data)
-        }
-
         res.json(response.data)
     } catch (error) {
         if (error instanceof CustomError) {
