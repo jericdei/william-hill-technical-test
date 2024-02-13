@@ -1,44 +1,53 @@
-import express, { Express, Request, Response, Application } from 'express';
-import dotenv from 'dotenv';
-import axios, { CustomError } from './lib/axios';
+import express, { Request, Response, Application } from "express"
+import dotenv from "dotenv"
+import axios, { CustomError } from "./lib/axios"
+import cors from "cors"
 
 // For `.env.` file
-dotenv.config();
+dotenv.config()
 
-const app: Application = express();
-const port = process.env.PORT || 3000;
+const app: Application = express()
+const port = process.env.PORT || 3000
 
-app.get('/', (req: Request, res: Response) => {
-    res.send('This is the Chuck Norris Jokes server.');
-});
+app.use(cors())
+
+app.get("/", (req: Request, res: Response) => {
+    res.send("This is the Chuck Norris Jokes server.")
+})
 
 async function getCategories(): Promise<string[]> {
-    const response = await axios.get('/jokes/categories')
+    try {
+        const response = await axios.get("/jokes/categories")
 
-    return response.data
+        return response.data
+    } catch (error) {
+        if (error instanceof CustomError) {
+            console.error("Custom error occurred:", error.message)
+        } else {
+            console.error("Unexpected error occurred:", error)
+        }
+
+        return []
+    }
 }
 
 // Get all categories
-app.get('/categories', async (req: Request, res: Response) => {
+app.get("/categories", async (req: Request, res: Response) => {
     try {
         res.json({
-            categories: await getCategories()
+            categories: await getCategories(),
         })
     } catch (error) {
         if (error instanceof CustomError) {
-            console.error('Custom error occurred:', error.message);
-
-            res.status(error.statusCode || 500).json({
-                message: error.message,
-            })
+            console.error("Custom error occurred:", error.message)
         } else {
-            console.error('Unexpected error occurred:', error);
+            console.error("Unexpected error occurred:", error)
         }
     }
-});
+})
 
 // Get random joke / random joke by category
-app.get('/jokes/random', async (req: Request, res: Response) => {
+app.get("/jokes/random", async (req: Request, res: Response) => {
     try {
         const params = req.query
 
@@ -49,28 +58,24 @@ app.get('/jokes/random', async (req: Request, res: Response) => {
         // If the `category` key is nonexistent or it's not a valid category
         if (Object.keys(params).length !== 0 && (!params.category || !categories.includes(params.category as string))) {
             res.status(422).json({
-                message: `Invalid category. Valid categories: ${categories.join(', ')}`
+                message: `Invalid category. Valid categories: ${categories.join(", ")}`,
             })
         }
 
-        const response = await axios.get('/jokes/random', { params })
+        const response = await axios.get("/jokes/random", { params })
 
         res.json(response.data)
     } catch (error) {
         if (error instanceof CustomError) {
-            console.error('Custom error occurred:', error.message);
-
-            res.status(error.statusCode || 500).json({
-                message: error.message,
-            })
+            console.error("Custom error occurred:", error.message)
         } else {
-            console.error('Unexpected error occurred:', error);
+            console.error("Unexpected error occurred:", error)
         }
     }
-});
+})
 
 // List of jokes by free text
-app.get('/jokes/search', async (req: Request, res: Response) => {
+app.get("/jokes/search", async (req: Request, res: Response) => {
     try {
         const params = req.query
 
@@ -78,26 +83,32 @@ app.get('/jokes/search', async (req: Request, res: Response) => {
         // If the `search` key is empty
         if (Object.keys(params).length !== 0 && !params.query) {
             res.status(422).json({
-                message: `Invalid search query.`
+                message: `Invalid search query.`,
             })
         }
 
-        const response = await axios.get('/jokes/search', { params })
+        const response = await axios.get("/jokes/search", {
+            params: {
+                query: params.query,
+            },
+        })
+
+        if (params.page) {
+            const data = response.data
+
+            console.log(data)
+        }
 
         res.json(response.data)
     } catch (error) {
         if (error instanceof CustomError) {
-            console.error('Custom error occurred:', error.message);
-
-            res.status(error.statusCode || 500).json({
-                message: error.message,
-            })
+            console.error("Custom error occurred:", error.message)
         } else {
-            console.error('Unexpected error occurred:', error);
+            console.error("Unexpected error occurred:", error)
         }
     }
 })
 
 app.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
-});
+    console.log(`Server is running at http://localhost:${port}`)
+})

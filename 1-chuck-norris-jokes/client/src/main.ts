@@ -1,5 +1,10 @@
-import { createApp } from 'vue'
-import './style.css'
-import App from './App.vue'
+import "./style.css"
+import "primevue/resources/themes/lara-dark-blue/theme.css"
+import "primeicons/primeicons.css"
 
-createApp(App).mount('#app')
+import { createApp } from "vue"
+import App from "./App.vue"
+import PrimeVue from "primevue/config"
+import ToastService from "primevue/toastservice"
+
+createApp(App).use(PrimeVue).use(ToastService).mount("#app")
