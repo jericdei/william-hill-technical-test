@@ -12,6 +12,9 @@ npm install
 # Create .env file using the example file
 cp .env.example .env
 
+# Build the app
+npm run build
+
 # Start the server
 npm start
 ```
