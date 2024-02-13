@@ -1,6 +1,6 @@
 # How to test
 
-Just run the file using Node.js
+Just run the file using `Node.js`.
 ```bash
 node index.js
 ```
