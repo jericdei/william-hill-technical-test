@@ -18,6 +18,8 @@ npm start
 
 ## Client (Vue.js)
 
+On a separate terminal:
+
 ```bash
 # Navigate to the client directory
 cd /path/to/repo/1-chuck-norris-jokes/client
