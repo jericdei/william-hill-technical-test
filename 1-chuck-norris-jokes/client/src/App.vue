@@ -56,6 +56,9 @@ onMounted(async () => {
         const { data } = await axios.get("/categories")
 
         categories.value = data.categories
+
+        // Get random joke
+        await getJokeByCategory()
     } catch (error) {
         handleError(error)
     } finally {
@@ -63,36 +66,44 @@ onMounted(async () => {
     }
 })
 
+async function getJokeByCategory() {
+    const { data } = await axios.get("/jokes/random", {
+        params: {
+            category: selectedCategory.value,
+        },
+    })
+
+    jokes.value = [data]
+}
+
+async function getJokesByQuery() {
+    if (!query.value) {
+        showErrorToast("Search value cannot be blank.")
+
+        return
+    }
+
+    const { data } = await axios.get("/jokes/search", {
+        params: {
+            query: query.value,
+        },
+    })
+
+    jokes.value = data.result
+    totalItems.value = data.total
+
+    // Reset pagination to beginning
+    first.value = 0
+}
+
 async function submit() {
     try {
         loading.value = true
 
         if (mode.value === "Category") {
-            const { data } = await axios.get("/jokes/random", {
-                params: {
-                    category: selectedCategory.value,
-                },
-            })
-
-            jokes.value = [data]
+            await getJokeByCategory()
         } else if (mode.value === "Free Text") {
-            if (!query.value) {
-                showErrorToast("Search value cannot be blank.")
-
-                return
-            }
-
-            const { data } = await axios.get("/jokes/search", {
-                params: {
-                    query: query.value,
-                },
-            })
-
-            jokes.value = data.result
-            totalItems.value = data.total
-
-            // Reset pagination to beginning
-            first.value = 0
+            await getJokesByQuery()
         }
     } catch (error) {
         handleError(error)
@@ -101,9 +112,13 @@ async function submit() {
     }
 }
 
-function reset() {
-    jokes.value = []
-    totalItems.value = 0
+async function reset() {
+    if (mode.value === "Category") {
+        await getJokeByCategory()
+    } else {
+        jokes.value = []
+        totalItems.value = 0
+    }
 }
 </script>
 
@@ -121,6 +136,7 @@ function reset() {
                 v-model="mode"
                 class="mt-8 flex justify-center"
                 :options="options"
+                :allow-empty="false"
                 @change="reset"
             />
 
